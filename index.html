@@ -604,8 +604,73 @@ function recommendQty(totalBaseVal, base, unit, name, servings) {
   return `${+(totalBaseVal * scale).toFixed(1)} ${unit}`.trim();
 }
 
-// ── Normalise ingredient name for deduplication ──
-// Strips descriptors so "fresh garlic cloves" and "garlic" both → "garlic"
+// ── Ingredient synonym map → canonical grocery item ──
+// Any ingredient whose name contains a key gets remapped to the value
+const SYNONYMS = [
+  // Chicken
+  [/\bchicken\b.*\b(breast|thigh|thighs|drumstick|wing|tender|tenderloins?|cutlet|shredded|rotisserie|boneless|skinless|pulled)\b/i, 'chicken'],
+  [/\b(boneless|skinless|shredded|rotisserie|pulled|cooked)\b.*\bchicken\b/i, 'chicken'],
+  // Ground meat
+  [/\bground\s+(beef|chuck|sirloin)\b/i, 'ground beef'],
+  [/\bground\s+(turkey|pork|lamb|veal)\b/i, (m) => `ground ${m[1].toLowerCase()}`],
+  // Beef cuts
+  [/\b(ribeye|rib[- ]eye|sirloin|flank\s*steak|skirt\s*steak|strip\s*steak|t[- ]bone)\b/i, 'beef steak'],
+  // Pork
+  [/\bpork\s+(tenderloin|loin|shoulder|butt|belly|chop|ribs?)\b/i, 'pork'],
+  // Onion variants
+  [/\b(yellow|white|red|sweet|vidalia)\s+onion\b/i, 'onion'],
+  [/\bgreen\s+onion\b/i, 'green onion'],
+  // Bell pepper
+  [/\b(red|green|yellow|orange)\s+bell\s+pepper\b/i, 'bell pepper'],
+  [/\b(red|green|yellow|orange)\s+pepper\b/i, 'bell pepper'],
+  // Garlic
+  [/\bgarlic\s+(clove|bulb|powder|paste)?\b/i, 'garlic'],
+  // Tomato
+  [/\b(cherry|grape|roma|plum|beefsteak|heirloom)\s+tomato\b/i, 'tomato'],
+  // Broth / stock
+  [/\bchicken\s+(broth|stock)\b/i, 'chicken broth'],
+  [/\bbeef\s+(broth|stock)\b/i, 'beef broth'],
+  [/\bvegetable\s+(broth|stock)\b/i, 'vegetable broth'],
+  // Cheese
+  [/\b(shredded|grated|sliced|block)\s+cheddar\b/i, 'cheddar cheese'],
+  [/\b(shredded|grated|fresh)\s+mozzarella\b/i, 'mozzarella cheese'],
+  [/\b(grated|shredded)\s+parmesan\b/i, 'parmesan cheese'],
+  // Olive oil
+  [/\b(extra[- ]virgin\s+)?olive\s+oil\b/i, 'olive oil'],
+  // Lemon / lime juice
+  [/\blemon\s+juice\b/i, 'lemon'],
+  [/\blime\s+juice\b/i, 'lime'],
+];
+
+function applysynonyms(name) {
+  const n = name.toLowerCase().trim();
+  for (const [pattern, replacement] of SYNONYMS) {
+    if (pattern.test(n)) {
+      return typeof replacement === 'function'
+        ? replacement(n.match(pattern))
+        : replacement;
+    }
+  }
+  return n;
+}
+
+// ── Cross-unit conversion for proteins (volume → weight) ──
+// Cooked/shredded chicken: ~1 cup = 140g
+// Cooked ground meat: ~1 cup = 225g
+// When an ingredient has both ml and g entries, convert ml→g using density
+const PROTEIN_ML_TO_G = {
+  'chicken': 140 / 240,      // per ml
+  'ground beef': 225 / 240,
+  'ground turkey': 225 / 240,
+  'ground pork': 225 / 240,
+  'ground lamb': 225 / 240,
+  'pork': 140 / 240,
+  'beef steak': 140 / 240,
+  'tuna': 170 / 240,         // canned tuna ~170g per cup
+  'salmon': 150 / 240,
+};
+
+
 const NOISE_WORDS = new Set([
   'fresh','dried','frozen','canned','chopped','diced','sliced','minced','grated',
   'shredded','peeled','crushed','ground','cooked','raw','ripe','whole','halved',
@@ -616,7 +681,10 @@ const NOISE_WORDS = new Set([
 ]);
 
 function canonicalise(name) {
-  return name.toLowerCase()
+  // 1. Apply synonym map first (handles "shredded chicken" → "chicken" etc.)
+  const synName = applysynonyms(name.toLowerCase().trim());
+  // 2. Strip noise words from the result
+  return synName
     .split(' ')
     .filter(w => !NOISE_WORDS.has(w) && w.length > 1)
     .join(' ')
@@ -625,7 +693,6 @@ function canonicalise(name) {
 
 // ── Main local generate function ──
 function generateLocal(recipeList, servings) {
-  // Map: canonical name → { name, qty entries, usedIn, category }
   const merged = {};
 
   recipeList.forEach(recipe => {
@@ -639,10 +706,10 @@ function generateLocal(recipeList, servings) {
 
       if (!merged[canon]) {
         merged[canon] = {
-          displayName: parsed.name,
+          displayName: canon, // use canonical name so merged items display cleanly
           entries: [],
           usedIn: [],
-          category: categorise(parsed.name),
+          category: categorise(canon),
         };
       }
       const entry = merged[canon];
@@ -657,21 +724,27 @@ function generateLocal(recipeList, servings) {
 
   // Consolidate and build output
   return Object.entries(merged).map(([canon, data]) => {
-    // Group entries by base unit type
-    const byBase = {};
+    const byBase = { ml: 0, g: 0, count: 0, other: 0 };
     data.entries.forEach(e => {
-      if (!byBase[e.base]) byBase[e.base] = 0;
       if (e.baseVal !== null) byBase[e.base] += e.baseVal;
     });
 
-    // Pick the dominant base
+    // Cross-unit merging: for proteins measured in both volume and weight,
+    // convert ml → g using density so totals combine correctly
+    const densityKey = Object.keys(PROTEIN_ML_TO_G).find(k => canon.includes(k));
+    if (densityKey && byBase['ml'] > 0) {
+      byBase['g'] += byBase['ml'] * PROTEIN_ML_TO_G[densityKey];
+      byBase['ml'] = 0;
+    }
+
+    // Pick dominant base (prefer g > ml > count > other)
     let totalBase = 'count', totalVal = 0, totalUnit = '';
-    if (byBase['ml']    > 0) { totalBase = 'ml';    totalVal = byBase['ml'];    }
-    else if (byBase['g'] > 0) { totalBase = 'g';     totalVal = byBase['g'];     }
+    if      (byBase['g']     > 0) { totalBase = 'g';     totalVal = byBase['g']; }
+    else if (byBase['ml']    > 0) { totalBase = 'ml';    totalVal = byBase['ml']; }
     else if (byBase['count'] > 0) { totalBase = 'count'; totalVal = byBase['count']; totalUnit = data.entries.find(e=>e.base==='count')?.unit || ''; }
     else if (byBase['other'] > 0) { totalBase = 'other'; totalVal = byBase['other']; totalUnit = data.entries.find(e=>e.base==='other')?.unit || ''; }
 
-    const qty = recommendQty(totalVal || null, totalBase, totalUnit, data.displayName, parseInt(servings));
+    const qty = recommendQty(totalVal || null, totalBase, totalUnit, canon, parseInt(servings));
 
     return {
       name: capitalise(data.displayName),
