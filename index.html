@@ -16,88 +16,109 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--paper); font-family: 'DM Sans', sans-serif; color: var(--ink); min-height: 100vh; }
 
-/* ── LOGIN SCREEN ── */
-#login-screen {
-display: none;
-position: fixed; inset: 0; z-index: 200;
-background: var(–paper);
+/* ═══════════════════════════════
+LOGIN & MODALS (shared base)
+═══════════════════════════════ */
+.screen-overlay {
+display: none; position: fixed; inset: 0; z-index: 300;
+background: rgba(250,250,247,0.97);
 align-items: center; justify-content: center;
-flex-direction: column;
+padding: 20px;
 }
-#login-screen.visible { display: flex; }
-.login-card {
-background: white;
-border: 2px solid var(–ink);
-border-radius: 20px;
-padding: 40px 36px;
-width: 100%;
-max-width: 360px;
+.screen-overlay.visible { display: flex; }
+
+.modal-card {
+background: white; border: 2px solid var(–ink);
+border-radius: 20px; padding: 36px 32px;
+width: 100%; max-width: 380px;
 box-shadow: 6px 6px 0 var(–ink);
-display: flex; flex-direction: column; gap: 18px;
+display: flex; flex-direction: column; gap: 16px;
 }
-.login-logo { font-family: ‘Playfair Display’, serif; font-size: 26px; font-weight: 900; letter-spacing: -1px; text-align: center; }
-.login-sub { font-family: ‘DM Mono’, monospace; font-size: 12px; color: var(–muted); text-align: center; margin-top: -10px; }
-.login-label { font-family: ‘DM Mono’, monospace; font-size: 12px; color: #555; margin-bottom: 6px; display: block; }
-.login-input {
+.modal-logo { font-family: ‘Playfair Display’, serif; font-size: 26px; font-weight: 900; letter-spacing: -1px; text-align: center; }
+.modal-sub  { font-family: ‘DM Mono’, monospace; font-size: 12px; color: var(–muted); text-align: center; margin-top: -8px; }
+.modal-title { font-family: ‘Playfair Display’, serif; font-size: 20px; font-weight: 700; }
+.modal-label { font-family: ‘DM Mono’, monospace; font-size: 11px; color: #555; margin-bottom: 5px; display: block; letter-spacing: 0.03em; }
+.modal-hint  { font-family: ‘DM Mono’, monospace; font-size: 11px; color: var(–muted); margin-top: -8px; line-height: 1.5; }
+
+.modal-input {
 width: 100%; border: 2px solid var(–border); border-radius: 10px;
-padding: 12px 14px; font-family: ‘DM Mono’, monospace; font-size: 15px;
-outline: none; transition: border-color 0.15s; letter-spacing: 0.1em;
-background: var(–paper);
+padding: 11px 13px; font-family: ‘DM Mono’, monospace; font-size: 14px;
+outline: none; transition: border-color 0.15s; background: var(–paper); color: var(–ink);
 }
-.login-input:focus { border-color: var(–ink); }
-.login-btn {
-width: 100%; padding: 13px;
+.modal-input:focus { border-color: var(–ink); }
+
+.modal-btn {
+width: 100%; padding: 12px;
 background: linear-gradient(135deg, var(–pink), var(–purple));
 border: 2px solid var(–ink); border-radius: 12px;
 font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 16px;
 color: var(–ink); cursor: pointer;
 box-shadow: 3px 3px 0 var(–ink); transition: all 0.15s;
 }
-.login-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(–ink); }
-.login-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(–ink); }
-.login-error {
+.modal-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(–ink); }
+.modal-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(–ink); }
+.modal-btn.secondary {
+background: white; color: var(–ink);
+box-shadow: 3px 3px 0 var(–border); border-color: var(–border);
+}
+.modal-btn.secondary:hover { border-color: var(–ink); box-shadow: 3px 3px 0 var(–ink); }
+.modal-btn.danger { background: #fee2e2; border-color: #fca5a5; color: #dc2626; box-shadow: 3px 3px 0 #fca5a5; }
+
+.modal-error {
 font-family: ‘DM Mono’, monospace; font-size: 12px; color: #dc2626;
 background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
 padding: 9px 12px; text-align: center; display: none;
 }
-.login-error.visible { display: block; }
+.modal-error.visible { display: block; }
+.modal-success {
+font-family: ‘DM Mono’, monospace; font-size: 12px; color: #16a34a;
+background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;
+padding: 9px 12px; text-align: center; display: none;
+}
+.modal-success.visible { display: block; }
+
+.modal-divider { border: none; border-top: 1.5px solid var(–border); margin: 4px 0; }
+
 .login-shake { animation: shake 0.35s ease; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
 
-/* ── MAIN APP ── */
+/* ═══════════════════════════════
+MAIN APP
+═══════════════════════════════ */
 #app { display: none; }
 #app.visible { display: block; padding-bottom: 60px; }
 
 header {
 background: var(–cream); border-bottom: 2px solid var(–ink);
-padding: 14px 24px; display: flex; align-items: center;
+padding: 13px 22px; display: flex; align-items: center;
 justify-content: space-between; flex-wrap: wrap; gap: 10px;
 position: sticky; top: 0; z-index: 100;
 }
-.logo { font-family: ‘Playfair Display’, serif; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; }
+.logo    { font-family: ‘Playfair Display’, serif; font-size: 21px; font-weight: 900; letter-spacing: -0.5px; }
 .tagline { font-family: ‘DM Mono’, monospace; font-size: 10px; color: var(–muted); margin-top: 2px; }
-.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.header-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-.servings-wrap { display: flex; align-items: center; gap: 7px; }
+.servings-wrap { display: flex; align-items: center; gap: 6px; }
 .servings-wrap label { font-family: ‘DM Mono’, monospace; font-size: 12px; color: #555; }
-select { border: 2px solid var(–ink); border-radius: 8px; padding: 5px 9px; font-family: ‘DM Mono’, monospace; font-size: 13px; background: white; cursor: pointer; outline: none; }
+select { border: 2px solid var(–ink); border-radius: 8px; padding: 5px 8px; font-family: ‘DM Mono’, monospace; font-size: 13px; background: white; cursor: pointer; outline: none; }
 
-.btn-logout {
+.hdr-btn {
 font-family: ‘DM Mono’, monospace; font-size: 11px; color: var(–muted);
 background: none; border: 1.5px solid var(–border); border-radius: 8px;
-padding: 5px 11px; cursor: pointer; transition: all 0.12s;
+padding: 5px 10px; cursor: pointer; transition: all 0.12s; white-space: nowrap;
 }
-.btn-logout:hover { border-color: #fca5a5; color: #dc2626; background: #fef2f2; }
+.hdr-btn:hover { border-color: var(–ink); color: var(–ink); background: #f5f5f0; }
+.hdr-btn.danger:hover { border-color: #fca5a5; color: #dc2626; background: #fef2f2; }
 
-.container { max-width: 980px; margin: 0 auto; padding: 24px 18px; }
-.grid { display: grid; grid-template-columns: 1fr; gap: 28px; }
+.container { max-width: 980px; margin: 0 auto; padding: 22px 16px; }
+.grid { display: grid; grid-template-columns: 1fr; gap: 26px; }
 @media(min-width: 720px) { .grid.has-list { grid-template-columns: 1fr 1fr; } }
 
-.toggle-wrap { display: flex; background: var(–border); border-radius: 12px; padding: 4px; width: fit-content; margin-bottom: 14px; }
-.toggle-btn { padding: 7px 15px; border-radius: 9px; border: none; background: transparent; font-family: ‘DM Sans’, sans-serif; font-weight: 600; font-size: 13px; color: var(–muted); cursor: pointer; transition: all 0.15s; }
+.toggle-wrap { display: flex; background: var(–border); border-radius: 12px; padding: 4px; width: fit-content; margin-bottom: 13px; }
+.toggle-btn { padding: 7px 14px; border-radius: 9px; border: none; background: transparent; font-family: ‘DM Sans’, sans-serif; font-weight: 600; font-size: 13px; color: var(–muted); cursor: pointer; transition: all 0.15s; }
 .toggle-btn.active { background: white; color: var(–ink); box-shadow: 0 1px 4px #0002; }
 
-.input-card { background: white; border: 2px solid var(–border); border-radius: 16px; padding: 16px; margin-bottom: 14px; }
+.input-card { background: white; border: 2px solid var(–border); border-radius: 16px; padding: 16px; margin-bottom: 13px; }
 input[type=text], input[type=url], textarea {
 width: 100%; border: 1.5px solid var(–border); border-radius: 10px;
 padding: 10px 13px; font-family: ‘DM Sans’, sans-serif; font-size: 14px;
@@ -109,35 +130,35 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
 .btn-add:hover { opacity: 0.82; }
 
 .section-title { font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 15px; margin-bottom: 9px; }
-.recipe-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.recipe-list { display: flex; flex-direction: column; gap: 7px; margin-bottom: 15px; }
 .recipe-card { background: white; border-radius: 13px; border: 2px solid var(–border); padding: 11px 13px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; transition: transform 0.15s; }
 .recipe-card:hover { transform: translate(-2px,-2px); }
 .recipe-name { font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 14px; }
-.recipe-url { font-family: ‘DM Mono’, monospace; font-size: 11px; color: var(–muted); word-break: break-all; margin-top: 2px; }
-.btn-remove { border-radius: 7px; border: 1.5px solid var(–border); background: #f3f4f6; padding: 3px 9px; font-size: 12px; cursor: pointer; color: #555; white-space: nowrap; flex-shrink: 0; transition: background 0.12s; }
+.recipe-url  { font-family: ‘DM Mono’, monospace; font-size: 11px; color: var(–muted); word-break: break-all; margin-top: 2px; }
+.btn-remove  { border-radius: 7px; border: 1.5px solid var(–border); background: #f3f4f6; padding: 3px 9px; font-size: 12px; cursor: pointer; color: #555; white-space: nowrap; flex-shrink: 0; transition: background 0.12s; }
 .btn-remove:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
 
-.actions-row { display: flex; gap: 10px; }
+.actions-row { display: flex; gap: 9px; }
 .btn-generate { flex: 1; padding: 13px; background: linear-gradient(135deg, var(–pink), var(–purple)); border: 2px solid var(–ink); border-radius: 13px; font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 16px; color: var(–ink); cursor: pointer; box-shadow: 4px 4px 0 var(–ink); transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .btn-generate:hover:not(:disabled) { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(–ink); }
 .btn-generate:active:not(:disabled) { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(–ink); }
 .btn-generate:disabled { background: var(–border); border-color: var(–border); box-shadow: none; color: #aaa; cursor: not-allowed; }
-.btn-clear { padding: 13px 15px; border: 2px solid var(–border); border-radius: 13px; background: white; cursor: pointer; font-size: 17px; transition: all 0.15s; color: #888; }
+.btn-clear { padding: 13px 14px; border: 2px solid var(–border); border-radius: 13px; background: white; cursor: pointer; font-size: 17px; transition: all 0.15s; color: #888; }
 .btn-clear:hover { border-color: #fca5a5; color: #dc2626; background: #fef2f2; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner { display: inline-block; animation: spin 0.9s linear infinite; }
 .error-box { margin-top: 10px; color: #dc2626; font-family: ‘DM Mono’, monospace; font-size: 12px; padding: 9px 13px; background: #fef2f2; border-radius: 8px; border: 1px solid #fecaca; }
 
-.list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
-.list-title { font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 20px; }
-.list-meta { display: flex; align-items: center; gap: 10px; }
-.list-count { font-family: ‘DM Mono’, monospace; font-size: 12px; color: var(–muted); }
+.list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+.list-title  { font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 20px; }
+.list-meta   { display: flex; align-items: center; gap: 9px; }
+.list-count  { font-family: ‘DM Mono’, monospace; font-size: 12px; color: var(–muted); }
 .btn-reset-checks { font-family: ‘DM Mono’, monospace; font-size: 11px; color: var(–muted); background: none; border: 1px solid var(–border); border-radius: 6px; padding: 3px 8px; cursor: pointer; transition: all 0.12s; }
 .btn-reset-checks:hover { border-color: var(–ink); color: var(–ink); }
 
 .category-block { margin-bottom: 20px; }
-.category-heading { font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 13px; border-bottom: 2.5px solid #ccc; padding-bottom: 5px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.category-heading { font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 13px; border-bottom: 2.5px solid #ccc; padding-bottom: 5px; margin-bottom: 8px; display: flex; align-items: center; gap: 7px; }
 .cat-dot { border-radius: 5px; width: 12px; height: 12px; display: inline-block; flex-shrink: 0; }
 
 .grocery-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 11px; border-radius: 10px; background: white; border: 1.5px solid var(–border); cursor: pointer; margin-bottom: 5px; transition: opacity 0.15s, background 0.15s; user-select: none; }
@@ -145,13 +166,18 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
 .check-box { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #ccc; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.12s; background: white; }
 .item-name { font-weight: 600; font-size: 14px; line-height: 1.4; }
 .grocery-item.checked .item-name { text-decoration: line-through; }
-.item-qty { font-weight: 400; color: #555; margin-left: 7px; font-size: 13px; }
+.item-qty  { font-weight: 400; color: #555; margin-left: 7px; font-size: 13px; }
 .item-note { font-size: 11px; color: var(–muted); font-family: ‘DM Mono’, monospace; margin-top: 2px; }
 .item-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.item-tag { border-radius: 10px; padding: 1px 7px; font-size: 10px; font-family: ‘DM Mono’, monospace; color: #555; }
+.item-tag  { border-radius: 10px; padding: 1px 7px; font-size: 10px; font-family: ‘DM Mono’, monospace; color: #555; }
 
 .empty-hint { text-align: center; padding: 36px 20px; color: var(–muted); font-family: ‘DM Mono’, monospace; font-size: 13px; border: 2px dashed var(–border); border-radius: 16px; line-height: 1.8; }
 .empty-hint .big { font-size: 30px; display: block; margin-bottom: 8px; }
+
+/* no-api banner */
+.no-api-banner { background: #fffbeb; border: 1.5px solid var(–yellow); border-radius: 10px; padding: 10px 14px; font-family: ‘DM Mono’, monospace; font-size: 12px; color: #92400e; margin-bottom: 13px; display: none; }
+.no-api-banner.visible { display: block; }
+.no-api-banner a { color: #92400e; font-weight: 600; cursor: pointer; text-decoration: underline; }
 
 @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
 .fade-in { animation: fadeUp 0.3s ease both; }
@@ -160,22 +186,74 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
 </head>
 <body>
 
-<!-- ── LOGIN SCREEN ── -->
+<!-- ══════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════ -->
 
-<div id="login-screen" class="visible">
-  <div class="login-card" id="login-card">
-    <div class="login-logo">🛒 mise en liste</div>
-    <div class="login-sub">recipe → grocery list, together</div>
+<div class="screen-overlay visible" id="login-screen">
+  <div class="modal-card" id="login-card">
+    <div class="modal-logo">🛒 mise en liste</div>
+    <div class="modal-sub">recipe → grocery list, together</div>
     <div>
-      <label class="login-label" for="pw-input">Password</label>
-      <input class="login-input" type="password" id="pw-input" placeholder="Enter password…" onkeydown="if(event.key==='Enter') tryLogin()" autocomplete="current-password"/>
+      <label class="modal-label" for="pw-input">Password</label>
+      <input class="modal-input" type="password" id="pw-input"
+             placeholder="Enter password…"
+             onkeydown="if(event.key==='Enter') tryLogin()"
+             autocomplete="current-password"/>
     </div>
-    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
-    <button class="login-btn" onclick="tryLogin()">Enter →</button>
+    <div class="modal-error" id="login-error">Incorrect password — try again.</div>
+    <button class="modal-btn" onclick="tryLogin()">Enter →</button>
   </div>
 </div>
 
-<!-- ── MAIN APP ── -->
+<!-- ══════════════════════════════════════
+     SETTINGS MODAL
+══════════════════════════════════════ -->
+
+<div class="screen-overlay" id="settings-screen">
+  <div class="modal-card">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div class="modal-title">⚙️ Settings</div>
+      <button class="hdr-btn" onclick="closeSettings()">✕ Close</button>
+    </div>
+
+```
+<!-- Change Password -->
+<div>
+  <label class="modal-label">Current Password</label>
+  <input class="modal-input" type="password" id="s-cur-pw" placeholder="Current password…" autocomplete="current-password"/>
+  <label class="modal-label" style="margin-top:8px">New Password</label>
+  <input class="modal-input" type="password" id="s-new-pw" placeholder="New password…" autocomplete="new-password"/>
+  <label class="modal-label" style="margin-top:8px">Confirm New Password</label>
+  <input class="modal-input" type="password" id="s-confirm-pw" placeholder="Confirm new password…" autocomplete="new-password"/>
+</div>
+<div class="modal-error"   id="s-pw-error"></div>
+<div class="modal-success" id="s-pw-success">✓ Password updated!</div>
+<button class="modal-btn secondary" onclick="changePassword()">Update Password</button>
+
+<hr class="modal-divider"/>
+
+<!-- API Key -->
+<div>
+  <label class="modal-label">Anthropic API Key</label>
+  <p class="modal-hint" style="margin-bottom:8px">Required to generate grocery lists.
+    Get one free at <strong>console.anthropic.com</strong></p>
+  <input class="modal-input" type="password" id="s-api-key"
+         placeholder="sk-ant-…"
+         autocomplete="off"
+         style="font-size:12px;letter-spacing:0.04em"/>
+</div>
+<div class="modal-error"   id="s-key-error"></div>
+<div class="modal-success" id="s-key-success">✓ API key saved!</div>
+<button class="modal-btn secondary" onclick="saveApiKey()">Save API Key</button>
+```
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════ -->
 
 <div id="app">
   <header>
@@ -197,25 +275,33 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
           <option value="10">10 people</option>
         </select>
       </div>
-      <button class="btn-logout" onclick="logout()">🔒 Lock</button>
+      <button class="hdr-btn" onclick="openSettings()">⚙️ Settings</button>
+      <button class="hdr-btn danger" onclick="logout()">🔒 Lock</button>
     </div>
   </header>
 
   <div class="container">
-    <div class="grid" id="main-grid">
+    <!-- No API key banner -->
+    <div class="no-api-banner" id="no-api-banner">
+      ⚠️ No API key set. <a onclick="openSettings()">Add your Anthropic API key in Settings</a> to generate grocery lists.
+    </div>
 
 ```
+<div class="grid" id="main-grid">
+
   <!-- LEFT: INPUT -->
   <div id="left-panel">
     <div class="toggle-wrap">
-      <button class="toggle-btn active" id="btn-mode-url" onclick="setMode('url')">🔗 Paste URL</button>
-      <button class="toggle-btn" id="btn-mode-manual" onclick="setMode('manual')">✍️ Type Ingredients</button>
+      <button class="toggle-btn active" id="btn-mode-url"    onclick="setMode('url')">🔗 Paste URL</button>
+      <button class="toggle-btn"        id="btn-mode-manual" onclick="setMode('manual')">✍️ Type Ingredients</button>
     </div>
 
     <div class="input-card">
       <input type="text" id="title-input" placeholder="Recipe name (e.g. Lemon Pasta)"/>
       <div id="url-section">
-        <input type="url" id="url-input" placeholder="Paste recipe URL (e.g. https://...)" onkeydown="if(event.key==='Enter') addRecipe()"/>
+        <input type="url" id="url-input"
+               placeholder="Paste recipe URL (e.g. https://...)"
+               onkeydown="if(event.key==='Enter') addRecipe()"/>
       </div>
       <div id="manual-section" style="display:none">
         <textarea id="manual-input" placeholder="Paste or type ingredients / recipe text..."></textarea>
@@ -229,7 +315,9 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
     </div>
 
     <div class="actions-row">
-      <button class="btn-generate" id="btn-generate" onclick="generate()" disabled>✨ Generate Grocery List</button>
+      <button class="btn-generate" id="btn-generate" onclick="generate()" disabled>
+        ✨ Generate Grocery List
+      </button>
       <button class="btn-clear" onclick="clearAll()" title="Clear everything">🗑️</button>
     </div>
     <div class="error-box" id="error-box" style="display:none"></div>
@@ -251,271 +339,365 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
 </div>
 
 <script>
-  // ── CONFIG — change this password to whatever you want ──
-  const PASSWORD = "mise2025";
-  const STORAGE_KEY = "mise_en_liste_v1";
+// ═══════════════════════════════════════════════════
+//  STORAGE KEYS
+// ═══════════════════════════════════════════════════
+const KEY_PW      = 'mel_password';
+const KEY_API     = 'mel_api_key';
+const KEY_STATE   = 'mel_state_v1';
+const KEY_SESSION = 'mel_session';
+const DEFAULT_PW  = 'mise2025';         // first-run default
 
-  // ── CONSTANTS ──
-  const PASTEL = ['#f9a8d4','#86efac','#93c5fd','#fcd34d','#c4b5fd','#fb923c','#67e8f9'];
-  const CAT_COLORS = {
-    'Produce':'#86efac','Dairy':'#93c5fd','Meat & Seafood':'#fb923c',
-    'Bakery':'#fcd34d','Pantry':'#c4b5fd','Frozen':'#67e8f9',
-    'Spices & Herbs':'#f9a8d4','Beverages':'#86efac','Other':'#e2e8f0'
-  };
+// ═══════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════
+const PASTEL = ['#f9a8d4','#86efac','#93c5fd','#fcd34d','#c4b5fd','#fb923c','#67e8f9'];
+const CAT_COLORS = {
+  'Produce':'#86efac','Dairy':'#93c5fd','Meat & Seafood':'#fb923c',
+  'Bakery':'#fcd34d','Pantry':'#c4b5fd','Frozen':'#67e8f9',
+  'Spices & Herbs':'#f9a8d4','Beverages':'#86efac','Other':'#e2e8f0'
+};
 
-  // ── STATE ──
-  let recipes = [];
-  let groceryItems = [];
-  let checkedItems = {};
-  let inputMode = 'url';
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function getPassword()  { return localStorage.getItem(KEY_PW) || DEFAULT_PW; }
+function getApiKey()    { return localStorage.getItem(KEY_API) || ''; }
 
-  // ── AUTH ──
-  function tryLogin() {
-    const val = document.getElementById('pw-input').value;
-    const errEl = document.getElementById('login-error');
-    const card = document.getElementById('login-card');
-    if (val === PASSWORD) {
-      sessionStorage.setItem('mel_auth', '1');
-      document.getElementById('login-screen').classList.remove('visible');
-      document.getElementById('app').classList.add('visible');
-      errEl.classList.remove('visible');
-      loadState();
-    } else {
-      errEl.classList.add('visible');
-      card.classList.remove('login-shake');
-      void card.offsetWidth; // reflow to restart animation
-      card.classList.add('login-shake');
-      document.getElementById('pw-input').value = '';
-      document.getElementById('pw-input').focus();
-    }
-  }
+// ═══════════════════════════════════════════════════
+//  APP STATE
+// ═══════════════════════════════════════════════════
+let recipes = [], groceryItems = [], checkedItems = {}, inputMode = 'url';
 
-  function logout() {
-    sessionStorage.removeItem('mel_auth');
-    document.getElementById('app').classList.remove('visible');
-    document.getElementById('login-screen').classList.add('visible');
-    document.getElementById('pw-input').value = '';
-  }
-
-  // Check if already authed this session
-  if (sessionStorage.getItem('mel_auth') === '1') {
+// ═══════════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════════
+function tryLogin() {
+  const val = document.getElementById('pw-input').value;
+  const errEl = document.getElementById('login-error');
+  const card  = document.getElementById('login-card');
+  if (val === getPassword()) {
+    sessionStorage.setItem(KEY_SESSION, '1');
     document.getElementById('login-screen').classList.remove('visible');
     document.getElementById('app').classList.add('visible');
-    // loadState called after DOM ready
+    errEl.classList.remove('visible');
+    loadState();
+    checkApiKey();
+  } else {
+    errEl.classList.add('visible');
+    card.classList.remove('login-shake');
+    void card.offsetWidth;
+    card.classList.add('login-shake');
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
   }
+}
 
-  // ── PERSISTENCE ──
-  function persist() {
-    const state = {
-      recipes,
-      groceryItems,
-      checkedItems,
-      servings: document.getElementById('servings').value
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+function logout() {
+  sessionStorage.removeItem(KEY_SESSION);
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('login-screen').classList.add('visible');
+  document.getElementById('pw-input').value = '';
+  closeSettings();
+}
+
+function checkApiKey() {
+  const banner = document.getElementById('no-api-banner');
+  banner.classList.toggle('visible', !getApiKey());
+}
+
+// Auto-login if session is active
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem(KEY_SESSION) === '1') {
+    document.getElementById('login-screen').classList.remove('visible');
+    document.getElementById('app').classList.add('visible');
+    loadState();
+    checkApiKey();
   }
-
-  function loadState() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const state = JSON.parse(raw);
-      recipes = state.recipes || [];
-      groceryItems = state.groceryItems || [];
-      checkedItems = state.checkedItems || {};
-      if (state.servings) document.getElementById('servings').value = state.servings;
-      renderRecipes();
-      if (groceryItems.length > 0) renderGroceryList(groceryItems);
-    } catch(e) { console.warn('Could not load saved state', e); }
+  // Pre-fill API key field if saved
+  const key = getApiKey();
+  if (key) {
+    document.getElementById('s-api-key').value = key;
   }
+});
 
-  // ── HELPERS ──
-  function escHtml(s) {
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── MODE TOGGLE ──
-  function setMode(m) {
-    inputMode = m;
-    document.getElementById('btn-mode-url').classList.toggle('active', m==='url');
-    document.getElementById('btn-mode-manual').classList.toggle('active', m==='manual');
-    document.getElementById('url-section').style.display = m==='url' ? '' : 'none';
-    document.getElementById('manual-section').style.display = m==='manual' ? '' : 'none';
-  }
-
-  // ── ADD RECIPE ──
-  function addRecipe() {
-    const title = document.getElementById('title-input').value.trim();
-    let r;
-    if (inputMode === 'url') {
-      let url = document.getElementById('url-input').value.trim();
-      if (!url) return;
-      if (!url.startsWith('http')) url = 'https://' + url;
-      r = { id: Date.now().toString(), title: title || url.replace(/https?:\/\/(www\.)?/,'').split('/')[0], url, content: url };
-      document.getElementById('url-input').value = '';
-    } else {
-      const manual = document.getElementById('manual-input').value.trim();
-      if (!manual || !title) { alert('Please enter a recipe name and ingredients.'); return; }
-      r = { id: Date.now().toString(), title, url: 'manual', content: manual };
-      document.getElementById('manual-input').value = '';
-    }
-    document.getElementById('title-input').value = '';
-    recipes.push(r);
-    renderRecipes();
-    persist();
-  }
-
-  function removeRecipe(id) {
-    recipes = recipes.filter(r => r.id !== id);
-    renderRecipes();
-    persist();
-  }
-
-  function clearAll() {
-    if (!confirm('Clear all recipes and the grocery list?')) return;
-    recipes = []; groceryItems = []; checkedItems = {};
-    renderRecipes();
-    document.getElementById('grocery-output').style.display = 'none';
-    document.getElementById('empty-hint').style.display = '';
-    document.getElementById('main-grid').classList.remove('has-list');
-    persist();
-  }
-
-  function resetChecks() {
-    checkedItems = {};
-    renderGroceryList(groceryItems);
-    persist();
-  }
-
-  // ── RENDER RECIPES ──
-  function renderRecipes() {
-    const list = document.getElementById('recipe-list');
-    const wrap = document.getElementById('recipe-list-wrap');
-    list.innerHTML = '';
-    recipes.forEach((r, i) => {
-      const color = PASTEL[i % PASTEL.length];
-      const div = document.createElement('div');
-      div.className = 'recipe-card fade-in';
-      div.style.cssText = `border-color:${color};box-shadow:4px 4px 0 ${color}66`;
-      div.innerHTML = `
-        <div style="flex:1;min-width:0">
-          <div class="recipe-name">${escHtml(r.title)}</div>
-          <div class="recipe-url">${escHtml(r.url==='manual'?'(manual entry)':r.url)}</div>
-        </div>
-        <button class="btn-remove" onclick="removeRecipe('${escHtml(r.id)}')">Remove</button>`;
-      list.appendChild(div);
-    });
-    wrap.style.display = recipes.length ? '' : 'none';
-    document.getElementById('recipe-count-label').textContent = `Your Recipes (${recipes.length})`;
-    document.getElementById('btn-generate').disabled = recipes.length === 0;
-  }
-
-  // ── GENERATE ──
-  async function generate() {
-    const btn = document.getElementById('btn-generate');
-    const errBox = document.getElementById('error-box');
-    const servings = document.getElementById('servings').value;
-    errBox.style.display = 'none';
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner">⟳</span> Building your list…';
-
-    const desc = recipes.map((r,i) =>
-      `Recipe ${i+1}: "${r.title}"\n${r.url!=='manual'?'URL: '+r.url:'Ingredients:\n'+r.content}`
-    ).join('\n\n---\n\n');
-
-    const prompt = `You are a smart grocery shopping assistant. Given these recipes, create a consolidated grocery list for ${servings} people.\n\n${desc}\n\nInstructions:\n- Combine duplicate ingredients\n- Recommend practical purchase quantities/sizes (e.g. "1 bag (5 lb)" not "3 cups flour")\n- Note which recipes each item is used in\n- Categorize into: Produce, Dairy, Meat & Seafood, Bakery, Pantry, Spices & Herbs, Frozen, Beverages, Other\n- Add helpful notes where useful\n- If given URLs, infer likely ingredients from your knowledge of common recipes\n\nRespond ONLY with a valid JSON array, no markdown, no code fences:\n[{"name":"...","quantity":"...","category":"...","note":"...","usedIn":["Recipe title"]}]`;
-
-    try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1500,
-          messages: [{ role:'user', content: prompt }]
-        })
-      });
-      const data = await res.json();
-      const text = (data.content||[]).map(b=>b.text||'').join('');
-      const items = JSON.parse(text.replace(/```json|```/g,'').trim());
-      groceryItems = items;
-      checkedItems = {};
-      renderGroceryList(items);
-      persist();
-    } catch(e) {
-      errBox.textContent = "Couldn't generate the list. Try adding recipe details manually, or check your connection.";
-      errBox.style.display = '';
-    }
-    btn.disabled = recipes.length === 0;
-    btn.innerHTML = '✨ Generate Grocery List';
-  }
-
-  // ── RENDER GROCERY LIST ──
-  function renderGroceryList(items) {
-    const out = document.getElementById('grocery-output');
-    const hint = document.getElementById('empty-hint');
-    hint.style.display = 'none';
-    out.style.display = '';
-    document.getElementById('main-grid').classList.add('has-list');
-
-    const cats = {};
-    items.forEach(item => { const c=item.category||'Other'; if(!cats[c]) cats[c]=[]; cats[c].push(item); });
-
-    const checkedCount = Object.values(checkedItems).filter(Boolean).length;
-    out.innerHTML = `
-      <div class="list-header fade-in">
-        <div class="list-title">🛍️ Shopping List</div>
-        <div class="list-meta">
-          <div class="list-count">${items.length} items${checkedCount?` · ${checkedCount} checked`:''}</div>
-          ${checkedCount>0?`<button class="btn-reset-checks" onclick="resetChecks()">uncheck all</button>`:''}
-        </div>
-      </div>`;
-
-    Object.entries(cats).forEach(([cat, catItems]) => {
-      const color = CAT_COLORS[cat]||'#e2e8f0';
-      const block = document.createElement('div');
-      block.className = 'category-block fade-in';
-      block.innerHTML = `<div class="category-heading" style="border-color:${color}"><span class="cat-dot" style="background:${color}"></span>${escHtml(cat)}</div>`;
-      catItems.forEach((item, idx) => {
-        const key = `${cat}||${idx}`;
-        const isChecked = !!checkedItems[key];
-        const div = document.createElement('div');
-        div.className = 'grocery-item' + (isChecked ? ' checked' : '');
-        const tagsHtml = (item.usedIn||[]).map((r,ri) => {
-          const tc = PASTEL[ri % PASTEL.length];
-          return `<span class="item-tag" style="background:${tc}22;border:1px solid ${tc}">${escHtml(r)}</span>`;
-        }).join('');
-        div.innerHTML = `
-          <div class="check-box" style="border-color:${color};${isChecked?'background:'+color:''}">${isChecked?'✓':''}</div>
-          <div style="flex:1;min-width:0">
-            <div class="item-name">${escHtml(item.name)}<span class="item-qty">${escHtml(item.quantity||'')}</span></div>
-            ${item.note?`<div class="item-note">${escHtml(item.note)}</div>`:''}
-            ${tagsHtml?`<div class="item-tags">${tagsHtml}</div>`:''}
-          </div>`;
-        div.addEventListener('click', () => toggleItem(key, color, div, items));
-        block.appendChild(div);
-      });
-      out.appendChild(block);
-    });
-  }
-
-  function toggleItem(key, color, div, items) {
-    checkedItems[key] = !checkedItems[key];
-    const checked = checkedItems[key];
-    div.classList.toggle('checked', checked);
-    const box = div.querySelector('.check-box');
-    box.style.background = checked ? color : 'white';
-    box.textContent = checked ? '✓' : '';
-    const cnt = Object.values(checkedItems).filter(Boolean).length;
-    const countEl = document.querySelector('.list-count');
-    if (countEl) countEl.textContent = `${items.length} items${cnt?` · ${cnt} checked`:''}`;
-    persist();
-  }
-
-  // Load on page ready if already authenticated
-  window.addEventListener('DOMContentLoaded', () => {
-    if (sessionStorage.getItem('mel_auth') === '1') loadState();
+// ═══════════════════════════════════════════════════
+//  SETTINGS
+// ═══════════════════════════════════════════════════
+function openSettings() {
+  // Reset messages
+  ['s-pw-error','s-pw-success','s-key-error','s-key-success'].forEach(id => {
+    document.getElementById(id).classList.remove('visible');
   });
+  document.getElementById('s-cur-pw').value = '';
+  document.getElementById('s-new-pw').value = '';
+  document.getElementById('s-confirm-pw').value = '';
+  // Pre-fill API key
+  document.getElementById('s-api-key').value = getApiKey();
+  document.getElementById('settings-screen').classList.add('visible');
+}
+
+function closeSettings() {
+  document.getElementById('settings-screen').classList.remove('visible');
+}
+
+function changePassword() {
+  const cur     = document.getElementById('s-cur-pw').value;
+  const nw      = document.getElementById('s-new-pw').value;
+  const confirm = document.getElementById('s-confirm-pw').value;
+  const errEl   = document.getElementById('s-pw-error');
+  const okEl    = document.getElementById('s-pw-success');
+  errEl.classList.remove('visible');
+  okEl.classList.remove('visible');
+
+  if (cur !== getPassword())    { errEl.textContent='Current password is incorrect.'; errEl.classList.add('visible'); return; }
+  if (!nw || nw.length < 4)     { errEl.textContent='New password must be at least 4 characters.'; errEl.classList.add('visible'); return; }
+  if (nw !== confirm)           { errEl.textContent='New passwords don\'t match.'; errEl.classList.add('visible'); return; }
+
+  localStorage.setItem(KEY_PW, nw);
+  document.getElementById('s-cur-pw').value    = '';
+  document.getElementById('s-new-pw').value    = '';
+  document.getElementById('s-confirm-pw').value = '';
+  okEl.classList.add('visible');
+}
+
+function saveApiKey() {
+  const key   = document.getElementById('s-api-key').value.trim();
+  const errEl = document.getElementById('s-key-error');
+  const okEl  = document.getElementById('s-key-success');
+  errEl.classList.remove('visible');
+  okEl.classList.remove('visible');
+
+  if (!key) { errEl.textContent='Please enter an API key.'; errEl.classList.add('visible'); return; }
+  if (!key.startsWith('sk-ant-') && !key.startsWith('sk-')) {
+    errEl.textContent='That doesn\'t look like an Anthropic key (should start with sk-ant-…)';
+    errEl.classList.add('visible'); return;
+  }
+  localStorage.setItem(KEY_API, key);
+  okEl.classList.add('visible');
+  checkApiKey();
+}
+
+// ═══════════════════════════════════════════════════
+//  PERSISTENCE
+// ═══════════════════════════════════════════════════
+function persist() {
+  localStorage.setItem(KEY_STATE, JSON.stringify({
+    recipes, groceryItems, checkedItems,
+    servings: document.getElementById('servings').value
+  }));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KEY_STATE);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    recipes       = s.recipes       || [];
+    groceryItems  = s.groceryItems  || [];
+    checkedItems  = s.checkedItems  || {};
+    if (s.servings) document.getElementById('servings').value = s.servings;
+    renderRecipes();
+    if (groceryItems.length > 0) renderGroceryList(groceryItems);
+  } catch(e) { console.warn('loadState error', e); }
+}
+
+// ═══════════════════════════════════════════════════
+//  MODE TOGGLE
+// ═══════════════════════════════════════════════════
+function setMode(m) {
+  inputMode = m;
+  document.getElementById('btn-mode-url').classList.toggle('active', m==='url');
+  document.getElementById('btn-mode-manual').classList.toggle('active', m==='manual');
+  document.getElementById('url-section').style.display    = m==='url'    ? '' : 'none';
+  document.getElementById('manual-section').style.display = m==='manual' ? '' : 'none';
+}
+
+// ═══════════════════════════════════════════════════
+//  RECIPES
+// ═══════════════════════════════════════════════════
+function addRecipe() {
+  const title = document.getElementById('title-input').value.trim();
+  let r;
+  if (inputMode === 'url') {
+    let url = document.getElementById('url-input').value.trim();
+    if (!url) return;
+    if (!url.startsWith('http')) url = 'https://' + url;
+    r = { id: Date.now().toString(), title: title || url.replace(/https?:\/\/(www\.)?/,'').split('/')[0], url, content: url };
+    document.getElementById('url-input').value = '';
+  } else {
+    const manual = document.getElementById('manual-input').value.trim();
+    if (!manual || !title) { alert('Please enter a recipe name and ingredients.'); return; }
+    r = { id: Date.now().toString(), title, url:'manual', content: manual };
+    document.getElementById('manual-input').value = '';
+  }
+  document.getElementById('title-input').value = '';
+  recipes.push(r);
+  renderRecipes();
+  persist();
+}
+
+function removeRecipe(id) {
+  recipes = recipes.filter(r => r.id !== id);
+  renderRecipes();
+  persist();
+}
+
+function clearAll() {
+  if (!confirm('Clear all recipes and the grocery list?')) return;
+  recipes = []; groceryItems = []; checkedItems = {};
+  renderRecipes();
+  document.getElementById('grocery-output').style.display = 'none';
+  document.getElementById('empty-hint').style.display = '';
+  document.getElementById('main-grid').classList.remove('has-list');
+  persist();
+}
+
+function resetChecks() {
+  checkedItems = {};
+  renderGroceryList(groceryItems);
+  persist();
+}
+
+function renderRecipes() {
+  const list = document.getElementById('recipe-list');
+  const wrap = document.getElementById('recipe-list-wrap');
+  list.innerHTML = '';
+  recipes.forEach((r, i) => {
+    const color = PASTEL[i % PASTEL.length];
+    const div   = document.createElement('div');
+    div.className = 'recipe-card fade-in';
+    div.style.cssText = `border-color:${color};box-shadow:4px 4px 0 ${color}66`;
+    div.innerHTML = `
+      <div style="flex:1;min-width:0">
+        <div class="recipe-name">${escHtml(r.title)}</div>
+        <div class="recipe-url">${escHtml(r.url==='manual'?'(manual entry)':r.url)}</div>
+      </div>
+      <button class="btn-remove" onclick="removeRecipe('${escHtml(r.id)}')">Remove</button>`;
+    list.appendChild(div);
+  });
+  wrap.style.display = recipes.length ? '' : 'none';
+  document.getElementById('recipe-count-label').textContent = `Your Recipes (${recipes.length})`;
+  document.getElementById('btn-generate').disabled = recipes.length === 0;
+}
+
+// ═══════════════════════════════════════════════════
+//  GENERATE
+// ═══════════════════════════════════════════════════
+async function generate() {
+  const apiKey = getApiKey();
+  if (!apiKey) { openSettings(); return; }
+
+  const btn    = document.getElementById('btn-generate');
+  const errBox = document.getElementById('error-box');
+  const servings = document.getElementById('servings').value;
+  errBox.style.display = 'none';
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner">⟳</span> Building your list…';
+
+  const desc = recipes.map((r,i) =>
+    `Recipe ${i+1}: "${r.title}"\n${r.url!=='manual' ? 'URL: '+r.url : 'Ingredients:\n'+r.content}`
+  ).join('\n\n---\n\n');
+
+  const prompt = `You are a smart grocery shopping assistant. Given these recipes, create a consolidated grocery list for ${servings} people.\n\n${desc}\n\nInstructions:\n- Combine duplicate ingredients\n- Recommend practical purchase quantities/sizes (e.g. "1 bag (5 lb)" not "3 cups flour")\n- Note which recipes each item is used in\n- Categorize into: Produce, Dairy, Meat & Seafood, Bakery, Pantry, Spices & Herbs, Frozen, Beverages, Other\n- Add helpful notes where useful\n- If given URLs, infer likely ingredients from your knowledge of common recipes\n\nRespond ONLY with a valid JSON array, no markdown, no code fences:\n[{"name":"...","quantity":"...","category":"...","note":"...","usedIn":["Recipe title"]}]`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role:'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text  = (data.content||[]).map(b=>b.text||'').join('');
+    const items = JSON.parse(text.replace(/```json|```/g,'').trim());
+    groceryItems = items; checkedItems = {};
+    renderGroceryList(items);
+    persist();
+  } catch(e) {
+    console.error(e);
+    errBox.textContent = e.message?.includes('API')
+      ? `API error: ${e.message}`
+      : 'Couldn\'t generate the list. Check your API key in Settings, or add recipe details manually.';
+    errBox.style.display = '';
+  }
+  btn.disabled = recipes.length === 0;
+  btn.innerHTML = '✨ Generate Grocery List';
+}
+
+// ═══════════════════════════════════════════════════
+//  GROCERY LIST
+// ═══════════════════════════════════════════════════
+function renderGroceryList(items) {
+  const out  = document.getElementById('grocery-output');
+  const hint = document.getElementById('empty-hint');
+  hint.style.display = 'none';
+  out.style.display  = '';
+  document.getElementById('main-grid').classList.add('has-list');
+
+  const cats = {};
+  items.forEach(item => { const c=item.category||'Other'; if(!cats[c]) cats[c]=[]; cats[c].push(item); });
+
+  const checkedCount = Object.values(checkedItems).filter(Boolean).length;
+  out.innerHTML = `
+    <div class="list-header fade-in">
+      <div class="list-title">🛍️ Shopping List</div>
+      <div class="list-meta">
+        <div class="list-count">${items.length} items${checkedCount?` · ${checkedCount} checked`:''}</div>
+        ${checkedCount>0?`<button class="btn-reset-checks" onclick="resetChecks()">uncheck all</button>`:''}
+      </div>
+    </div>`;
+
+  Object.entries(cats).forEach(([cat, catItems]) => {
+    const color = CAT_COLORS[cat]||'#e2e8f0';
+    const block = document.createElement('div');
+    block.className = 'category-block fade-in';
+    block.innerHTML = `<div class="category-heading" style="border-color:${color}"><span class="cat-dot" style="background:${color}"></span>${escHtml(cat)}</div>`;
+    catItems.forEach((item, idx) => {
+      const key       = `${cat}||${idx}`;
+      const isChecked = !!checkedItems[key];
+      const div       = document.createElement('div');
+      div.className   = 'grocery-item' + (isChecked ? ' checked' : '');
+      const tagsHtml  = (item.usedIn||[]).map((r,ri) => {
+        const tc = PASTEL[ri%PASTEL.length];
+        return `<span class="item-tag" style="background:${tc}22;border:1px solid ${tc}">${escHtml(r)}</span>`;
+      }).join('');
+      div.innerHTML = `
+        <div class="check-box" style="border-color:${color};${isChecked?'background:'+color:''}">${isChecked?'✓':''}</div>
+        <div style="flex:1;min-width:0">
+          <div class="item-name">${escHtml(item.name)}<span class="item-qty">${escHtml(item.quantity||'')}</span></div>
+          ${item.note?`<div class="item-note">${escHtml(item.note)}</div>`:''}
+          ${tagsHtml?`<div class="item-tags">${tagsHtml}</div>`:''}
+        </div>`;
+      div.addEventListener('click', () => toggleItem(key, color, div, items));
+      block.appendChild(div);
+    });
+    out.appendChild(block);
+  });
+}
+
+function toggleItem(key, color, div, items) {
+  checkedItems[key] = !checkedItems[key];
+  const checked = checkedItems[key];
+  div.classList.toggle('checked', checked);
+  const box = div.querySelector('.check-box');
+  box.style.background = checked ? color : 'white';
+  box.textContent = checked ? '✓' : '';
+  const cnt = Object.values(checkedItems).filter(Boolean).length;
+  const countEl = document.querySelector('.list-count');
+  if (countEl) countEl.textContent = `${items.length} items${cnt?` · ${cnt} checked`:''}`;
+  persist();
+}
 </script>
 
 </body>
