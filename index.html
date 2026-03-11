@@ -17,76 +17,53 @@
   body { background: var(--paper); font-family: 'DM Sans', sans-serif; color: var(--ink); min-height: 100vh; }
 
 /* ═══════════════════════════════
-LOGIN & MODALS (shared base)
+LOGIN SCREEN
 ═══════════════════════════════ */
-.screen-overlay {
+#login-screen {
 display: none; position: fixed; inset: 0; z-index: 300;
-background: rgba(250,250,247,0.97);
-align-items: center; justify-content: center;
-padding: 20px;
+background: var(–paper);
+align-items: center; justify-content: center; padding: 20px;
 }
-.screen-overlay.visible { display: flex; }
-
-.modal-card {
-background: white; border: 2px solid var(–ink);
-border-radius: 20px; padding: 36px 32px;
-width: 100%; max-width: 380px;
+#login-screen.visible { display: flex; }
+.login-card {
+background: white; border: 2px solid var(–ink); border-radius: 20px;
+padding: 38px 32px; width: 100%; max-width: 360px;
 box-shadow: 6px 6px 0 var(–ink);
 display: flex; flex-direction: column; gap: 16px;
 }
-.modal-logo { font-family: ‘Playfair Display’, serif; font-size: 26px; font-weight: 900; letter-spacing: -1px; text-align: center; }
-.modal-sub  { font-family: ‘DM Mono’, monospace; font-size: 12px; color: var(–muted); text-align: center; margin-top: -8px; }
-.modal-title { font-family: ‘Playfair Display’, serif; font-size: 20px; font-weight: 700; }
-.modal-label { font-family: ‘DM Mono’, monospace; font-size: 11px; color: #555; margin-bottom: 5px; display: block; letter-spacing: 0.03em; }
-.modal-hint  { font-family: ‘DM Mono’, monospace; font-size: 11px; color: var(–muted); margin-top: -8px; line-height: 1.5; }
-
-.modal-input {
+.login-logo { font-family: ‘Playfair Display’, serif; font-size: 26px; font-weight: 900; letter-spacing: -1px; text-align: center; }
+.login-sub  { font-family: ‘DM Mono’, monospace; font-size: 12px; color: var(–muted); text-align: center; margin-top: -8px; }
+.login-label { font-family: ‘DM Mono’, monospace; font-size: 11px; color: #555; margin-bottom: 5px; display: block; }
+.login-input {
 width: 100%; border: 2px solid var(–border); border-radius: 10px;
-padding: 11px 13px; font-family: ‘DM Mono’, monospace; font-size: 14px;
+padding: 12px 14px; font-family: ‘DM Mono’, monospace; font-size: 15px;
 outline: none; transition: border-color 0.15s; background: var(–paper); color: var(–ink);
 }
-.modal-input:focus { border-color: var(–ink); }
-
-.modal-btn {
-width: 100%; padding: 12px;
+.login-input:focus { border-color: var(–ink); }
+.login-btn {
+width: 100%; padding: 13px;
 background: linear-gradient(135deg, var(–pink), var(–purple));
 border: 2px solid var(–ink); border-radius: 12px;
 font-family: ‘Playfair Display’, serif; font-weight: 700; font-size: 16px;
 color: var(–ink); cursor: pointer;
 box-shadow: 3px 3px 0 var(–ink); transition: all 0.15s;
 }
-.modal-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(–ink); }
-.modal-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(–ink); }
-.modal-btn.secondary {
-background: white; color: var(–ink);
-box-shadow: 3px 3px 0 var(–border); border-color: var(–border);
-}
-.modal-btn.secondary:hover { border-color: var(–ink); box-shadow: 3px 3px 0 var(–ink); }
-.modal-btn.danger { background: #fee2e2; border-color: #fca5a5; color: #dc2626; box-shadow: 3px 3px 0 #fca5a5; }
-
-.modal-error {
+.login-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 var(–ink); }
+.login-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(–ink); }
+.login-error {
 font-family: ‘DM Mono’, monospace; font-size: 12px; color: #dc2626;
 background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px;
 padding: 9px 12px; text-align: center; display: none;
 }
-.modal-error.visible { display: block; }
-.modal-success {
-font-family: ‘DM Mono’, monospace; font-size: 12px; color: #16a34a;
-background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px;
-padding: 9px 12px; text-align: center; display: none;
-}
-.modal-success.visible { display: block; }
-
-.modal-divider { border: none; border-top: 1.5px solid var(–border); margin: 4px 0; }
-
+.login-error.visible { display: block; }
 .login-shake { animation: shake 0.35s ease; }
 @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
 
 /* ═══════════════════════════════
 MAIN APP
 ═══════════════════════════════ */
-#app { display: none; }
-#app.visible { display: block; padding-bottom: 60px; }
+#app { display: none; padding-bottom: 60px; }
+#app.visible { display: block; }
 
 header {
 background: var(–cream); border-bottom: 2px solid var(–ink);
@@ -108,7 +85,6 @@ background: none; border: 1.5px solid var(–border); border-radius: 8px;
 padding: 5px 10px; cursor: pointer; transition: all 0.12s; white-space: nowrap;
 }
 .hdr-btn:hover { border-color: var(–ink); color: var(–ink); background: #f5f5f0; }
-.hdr-btn.danger:hover { border-color: #fca5a5; color: #dc2626; background: #fef2f2; }
 
 .container { max-width: 980px; margin: 0 auto; padding: 22px 16px; }
 .grid { display: grid; grid-template-columns: 1fr; gap: 26px; }
@@ -185,48 +161,19 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
      LOGIN SCREEN
 ══════════════════════════════════════ -->
 
-<div class="screen-overlay visible" id="login-screen">
-  <div class="modal-card" id="login-card">
-    <div class="modal-logo">🛒 mise en liste</div>
-    <div class="modal-sub">recipe → grocery list, together</div>
+<div id="login-screen" class="visible">
+  <div class="login-card" id="login-card">
+    <div class="login-logo">🛒 mise en liste</div>
+    <div class="login-sub">recipe → grocery list, together</div>
     <div>
-      <label class="modal-label" for="pw-input">Password</label>
-      <input class="modal-input" type="password" id="pw-input"
+      <label class="login-label" for="pw-input">Password</label>
+      <input class="login-input" type="password" id="pw-input"
              placeholder="Enter password…"
              onkeydown="if(event.key==='Enter') tryLogin()"
              autocomplete="current-password"/>
     </div>
-    <div class="modal-error" id="login-error">Incorrect password — try again.</div>
-    <button class="modal-btn" onclick="tryLogin()">Enter →</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════
-     SETTINGS MODAL
-══════════════════════════════════════ -->
-
-<div class="screen-overlay" id="settings-screen">
-  <div class="modal-card">
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <div class="modal-title">⚙️ Settings</div>
-      <button class="hdr-btn" onclick="closeSettings()">✕ Close</button>
-    </div>
-
-```
-<!-- Change Password -->
-<div>
-  <label class="modal-label">Current Password</label>
-  <input class="modal-input" type="password" id="s-cur-pw" placeholder="Current password…" autocomplete="current-password"/>
-  <label class="modal-label" style="margin-top:8px">New Password</label>
-  <input class="modal-input" type="password" id="s-new-pw" placeholder="New password…" autocomplete="new-password"/>
-  <label class="modal-label" style="margin-top:8px">Confirm New Password</label>
-  <input class="modal-input" type="password" id="s-confirm-pw" placeholder="Confirm new password…" autocomplete="new-password"/>
-</div>
-<div class="modal-error"   id="s-pw-error"></div>
-<div class="modal-success" id="s-pw-success">✓ Password updated!</div>
-<button class="modal-btn secondary" onclick="changePassword()">Update Password</button>
-```
-
+    <div class="login-error" id="login-error">Incorrect password — try again.</div>
+    <button class="login-btn" onclick="tryLogin()">Enter →</button>
   </div>
 </div>
 
@@ -254,8 +201,7 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
           <option value="10">10 people</option>
         </select>
       </div>
-      <button class="hdr-btn" onclick="openSettings()">⚙️ Settings</button>
-      <button class="hdr-btn danger" onclick="logout()">🔒 Lock</button>
+      <button class="hdr-btn" onclick="logout()" style="color:#dc2626;border-color:#fca5a5;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='none'">🔒 Lock</button>
     </div>
   </header>
 
@@ -314,13 +260,10 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════
-//  STORAGE KEYS
-// ═══════════════════════════════════════════════════
-const KEY_PW      = 'mel_password';
 const KEY_STATE   = 'mel_state_v1';
 const KEY_SESSION = 'mel_session';
-const DEFAULT_PW  = 'mise2025';         // first-run default
+// New password — old saved password is cleared on load so it cannot be reused
+const APP_PASSWORD = 'grocery25';
 
 // ═══════════════════════════════════════════════════
 //  HELPERS
@@ -336,8 +279,6 @@ function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
                       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-function getPassword()  { return localStorage.getItem(KEY_PW) || DEFAULT_PW; }
-
 
 // ═══════════════════════════════════════════════════
 //  APP STATE
@@ -347,11 +288,14 @@ let recipes = [], groceryItems = [], checkedItems = {}, inputMode = 'url';
 // ═══════════════════════════════════════════════════
 //  AUTH
 // ═══════════════════════════════════════════════════
+// Wipe any previously saved password so old credentials don't work
+localStorage.removeItem('mel_password');
+
 function tryLogin() {
-  const val = document.getElementById('pw-input').value;
+  const val   = document.getElementById('pw-input').value;
   const errEl = document.getElementById('login-error');
   const card  = document.getElementById('login-card');
-  if (val === getPassword()) {
+  if (val === APP_PASSWORD) {
     sessionStorage.setItem(KEY_SESSION, '1');
     document.getElementById('login-screen').classList.remove('visible');
     document.getElementById('app').classList.add('visible');
@@ -372,10 +316,8 @@ function logout() {
   document.getElementById('app').classList.remove('visible');
   document.getElementById('login-screen').classList.add('visible');
   document.getElementById('pw-input').value = '';
-  closeSettings();
 }
 
-// Auto-login if session is active
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem(KEY_SESSION) === '1') {
     document.getElementById('login-screen').classList.remove('visible');
@@ -383,46 +325,6 @@ window.addEventListener('DOMContentLoaded', () => {
     loadState();
   }
 });
-
-// ═══════════════════════════════════════════════════
-//  SETTINGS
-// ═══════════════════════════════════════════════════
-function openSettings() {
-  // Reset messages
-  ['s-pw-error','s-pw-success','s-key-error','s-key-success'].forEach(id => {
-    document.getElementById(id).classList.remove('visible');
-  });
-  document.getElementById('s-cur-pw').value = '';
-  document.getElementById('s-new-pw').value = '';
-  document.getElementById('s-confirm-pw').value = '';
-  // Pre-fill API key
-  document.getElementById('s-api-key').value = getApiKey();
-  document.getElementById('settings-screen').classList.add('visible');
-}
-
-function closeSettings() {
-  document.getElementById('settings-screen').classList.remove('visible');
-}
-
-function changePassword() {
-  const cur     = document.getElementById('s-cur-pw').value;
-  const nw      = document.getElementById('s-new-pw').value;
-  const confirm = document.getElementById('s-confirm-pw').value;
-  const errEl   = document.getElementById('s-pw-error');
-  const okEl    = document.getElementById('s-pw-success');
-  errEl.classList.remove('visible');
-  okEl.classList.remove('visible');
-
-  if (cur !== getPassword())    { errEl.textContent='Current password is incorrect.'; errEl.classList.add('visible'); return; }
-  if (!nw || nw.length < 4)     { errEl.textContent='New password must be at least 4 characters.'; errEl.classList.add('visible'); return; }
-  if (nw !== confirm)           { errEl.textContent='New passwords don\'t match.'; errEl.classList.add('visible'); return; }
-
-  localStorage.setItem(KEY_PW, nw);
-  document.getElementById('s-cur-pw').value    = '';
-  document.getElementById('s-new-pw').value    = '';
-  document.getElementById('s-confirm-pw').value = '';
-  okEl.classList.add('visible');
-}
 
 // ═══════════════════════════════════════════════════
 //  PERSISTENCE
