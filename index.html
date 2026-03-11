@@ -174,11 +174,6 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
 .empty-hint { text-align: center; padding: 36px 20px; color: var(–muted); font-family: ‘DM Mono’, monospace; font-size: 13px; border: 2px dashed var(–border); border-radius: 16px; line-height: 1.8; }
 .empty-hint .big { font-size: 30px; display: block; margin-bottom: 8px; }
 
-/* no-api banner */
-.no-api-banner { background: #fffbeb; border: 1.5px solid var(–yellow); border-radius: 10px; padding: 10px 14px; font-family: ‘DM Mono’, monospace; font-size: 12px; color: #92400e; margin-bottom: 13px; display: none; }
-.no-api-banner.visible { display: block; }
-.no-api-banner a { color: #92400e; font-weight: 600; cursor: pointer; text-decoration: underline; }
-
 @keyframes fadeUp { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
 .fade-in { animation: fadeUp 0.3s ease both; }
 </style>
@@ -230,22 +225,6 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
 <div class="modal-error"   id="s-pw-error"></div>
 <div class="modal-success" id="s-pw-success">✓ Password updated!</div>
 <button class="modal-btn secondary" onclick="changePassword()">Update Password</button>
-
-<hr class="modal-divider"/>
-
-<!-- API Key -->
-<div>
-  <label class="modal-label">Anthropic API Key</label>
-  <p class="modal-hint" style="margin-bottom:8px">Required to generate grocery lists.
-    Get one free at <strong>console.anthropic.com</strong></p>
-  <input class="modal-input" type="password" id="s-api-key"
-         placeholder="sk-ant-…"
-         autocomplete="off"
-         style="font-size:12px;letter-spacing:0.04em"/>
-</div>
-<div class="modal-error"   id="s-key-error"></div>
-<div class="modal-success" id="s-key-success">✓ API key saved!</div>
-<button class="modal-btn secondary" onclick="saveApiKey()">Save API Key</button>
 ```
 
   </div>
@@ -281,10 +260,6 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
   </header>
 
   <div class="container">
-    <!-- No API key banner -->
-    <div class="no-api-banner" id="no-api-banner">
-      ⚠️ No API key set. <a onclick="openSettings()">Add your Anthropic API key in Settings</a> to generate grocery lists.
-    </div>
 
 ```
 <div class="grid" id="main-grid">
@@ -327,7 +302,7 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
   <div id="right-panel">
     <div class="empty-hint" id="empty-hint">
       <span class="big">🥕</span>
-      Add some recipes on the left,<br/>then generate your grocery list!
+      Paste ingredient lists using<br/><strong>✍️ Type Ingredients</strong> mode,<br/>then hit Generate!
     </div>
     <div id="grocery-output" style="display:none"></div>
   </div>
@@ -343,7 +318,6 @@ textarea { font-family: ‘DM Mono’, monospace; font-size: 13px; resize: verti
 //  STORAGE KEYS
 // ═══════════════════════════════════════════════════
 const KEY_PW      = 'mel_password';
-const KEY_API     = 'mel_api_key';
 const KEY_STATE   = 'mel_state_v1';
 const KEY_SESSION = 'mel_session';
 const DEFAULT_PW  = 'mise2025';         // first-run default
@@ -363,7 +337,7 @@ function escHtml(s) {
                       .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function getPassword()  { return localStorage.getItem(KEY_PW) || DEFAULT_PW; }
-function getApiKey()    { return localStorage.getItem(KEY_API) || ''; }
+
 
 // ═══════════════════════════════════════════════════
 //  APP STATE
@@ -383,7 +357,6 @@ function tryLogin() {
     document.getElementById('app').classList.add('visible');
     errEl.classList.remove('visible');
     loadState();
-    checkApiKey();
   } else {
     errEl.classList.add('visible');
     card.classList.remove('login-shake');
@@ -402,23 +375,12 @@ function logout() {
   closeSettings();
 }
 
-function checkApiKey() {
-  const banner = document.getElementById('no-api-banner');
-  banner.classList.toggle('visible', !getApiKey());
-}
-
 // Auto-login if session is active
 window.addEventListener('DOMContentLoaded', () => {
   if (sessionStorage.getItem(KEY_SESSION) === '1') {
     document.getElementById('login-screen').classList.remove('visible');
     document.getElementById('app').classList.add('visible');
     loadState();
-    checkApiKey();
-  }
-  // Pre-fill API key field if saved
-  const key = getApiKey();
-  if (key) {
-    document.getElementById('s-api-key').value = key;
   }
 });
 
@@ -460,23 +422,6 @@ function changePassword() {
   document.getElementById('s-new-pw').value    = '';
   document.getElementById('s-confirm-pw').value = '';
   okEl.classList.add('visible');
-}
-
-function saveApiKey() {
-  const key   = document.getElementById('s-api-key').value.trim();
-  const errEl = document.getElementById('s-key-error');
-  const okEl  = document.getElementById('s-key-success');
-  errEl.classList.remove('visible');
-  okEl.classList.remove('visible');
-
-  if (!key) { errEl.textContent='Please enter an API key.'; errEl.classList.add('visible'); return; }
-  if (!key.startsWith('sk-ant-') && !key.startsWith('sk-')) {
-    errEl.textContent='That doesn\'t look like an Anthropic key (should start with sk-ant-…)';
-    errEl.classList.add('visible'); return;
-  }
-  localStorage.setItem(KEY_API, key);
-  okEl.classList.add('visible');
-  checkApiKey();
 }
 
 // ═══════════════════════════════════════════════════
@@ -582,13 +527,291 @@ function renderRecipes() {
   document.getElementById('btn-generate').disabled = recipes.length === 0;
 }
 
-// ═══════════════════════════════════════════════════
-//  GENERATE
-// ═══════════════════════════════════════════════════
-async function generate() {
-  const apiKey = getApiKey();
-  if (!apiKey) { openSettings(); return; }
+// ═══════════════════════════════════════════════════════════════════
+//  LOCAL INGREDIENT PARSING ENGINE  (no API key required)
+// ═══════════════════════════════════════════════════════════════════
 
+// ── Unit conversion to a common base (ml for volume, g for weight) ──
+const UNIT_TO_ML = {
+  'tsp':5,'teaspoon':5,'teaspoons':5,
+  'tbsp':15,'tablespoon':15,'tablespoons':15,'tb':15,
+  'fl oz':30,'fluid ounce':30,'fluid ounces':30,
+  'cup':240,'cups':240,'c':240,
+  'pt':480,'pint':480,'pints':480,
+  'qt':960,'quart':960,'quarts':960,
+  'l':1000,'liter':1000,'liters':1000,'litre':1000,'litres':1000,
+  'ml':1,'milliliter':1,'milliliters':1,'millilitre':1,'millilitres':1,
+};
+const UNIT_TO_G = {
+  'oz':28,'ounce':28,'ounces':28,
+  'lb':454,'lbs':454,'pound':454,'pounds':454,
+  'kg':1000,'kilogram':1000,'kilograms':1000,
+  'g':1,'gram':1,'grams':1,
+};
+// Units that stay as-is (counted)
+const COUNT_UNITS = new Set([
+  'clove','cloves','head','heads','bunch','bunches','stalk','stalks',
+  'sprig','sprigs','slice','slices','piece','pieces','can','cans',
+  'jar','jars','bottle','bottles','bag','bags','box','boxes',
+  'package','packages','pkg','strip','strips','sheet','sheets',
+  'ear','ears','loaf','loaves','fillet','fillets','link','links',
+  'patty','patties','cube','cubes','scoop','scoops','dash','dashes',
+  'pinch','pinches','handful','handfuls',
+]);
+
+// Convert a qty+unit to a normalised object {value, unit, base}
+function normaliseUnit(qty, unit) {
+  const u = unit.toLowerCase().trim();
+  if (UNIT_TO_ML[u]) return { value: qty, unit: u, base: 'ml',    baseVal: qty * UNIT_TO_ML[u] };
+  if (UNIT_TO_G[u])  return { value: qty, unit: u, base: 'g',     baseVal: qty * UNIT_TO_G[u]  };
+  if (COUNT_UNITS.has(u)) return { value: qty, unit: u, base: 'count', baseVal: qty };
+  if (u === '')           return { value: qty, unit: '',  base: 'count', baseVal: qty };
+  return { value: qty, unit: u, base: 'other', baseVal: qty };
+}
+
+// Convert ml total → human-friendly string
+function mlToHuman(ml) {
+  if (ml >= 960)  return `${+(ml/960).toFixed(1)} qt`;
+  if (ml >= 480)  return `${+(ml/480).toFixed(1)} pt`;
+  if (ml >= 240)  return `${+(ml/240).toFixed(1)} cup${ml>=480?'s':''}`;
+  if (ml >= 15)   return `${+(ml/15).toFixed(1)} tbsp`;
+  return `${+(ml/5).toFixed(1)} tsp`;
+}
+// Convert g total → human-friendly string
+function gToHuman(g) {
+  if (g >= 454) return `${+(g/454).toFixed(2)} lb`;
+  if (g >= 28)  return `${+(g/28).toFixed(1)} oz`;
+  return `${g.toFixed(0)} g`;
+}
+
+// ── Fraction parser: "1 1/2" → 1.5, "3/4" → 0.75 ──
+function parseFraction(s) {
+  s = s.trim();
+  // unicode fractions
+  const UF = {'½':0.5,'⅓':0.333,'⅔':0.667,'¼':0.25,'¾':0.75,'⅕':0.2,'⅖':0.4,'⅗':0.6,'⅘':0.8,'⅙':0.167,'⅚':0.833,'⅛':0.125,'⅜':0.375,'⅝':0.625,'⅞':0.875};
+  for (const [k,v] of Object.entries(UF)) s = s.replace(k, ' '+v);
+  s = s.trim();
+  const mixed = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if (mixed) return parseInt(mixed[1]) + parseInt(mixed[2])/parseInt(mixed[3]);
+  const frac  = s.match(/^(\d+)\/(\d+)$/);
+  if (frac)  return parseInt(frac[1])/parseInt(frac[2]);
+  const num = parseFloat(s);
+  return isNaN(num) ? null : num;
+}
+
+// ── Parse a single ingredient line ──
+// Returns { qty, unit, name, prep, raw }
+function parseIngredientLine(line) {
+  line = line.trim();
+  if (!line || line.length < 2) return null;
+
+  // Strip leading bullet/dash/number markers
+  line = line.replace(/^[\-\*•·▪◦‣⁃]\s*/,'').replace(/^\d+[\.\)]\s*/,'').trim();
+  if (!line) return null;
+
+  // All known units combined for regex
+  const allUnits = [
+    ...Object.keys(UNIT_TO_ML), ...Object.keys(UNIT_TO_G), ...COUNT_UNITS
+  ].sort((a,b) => b.length - a.length); // longest first
+  const unitRx = allUnits.map(u => u.replace(/\./g,'\\.')).join('|');
+
+  // Pattern: [qty] [unit] ingredient [, prep]
+  const rx = new RegExp(
+    `^([\\d\\s\\/½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+)?\\s*(${unitRx})\\.?\\s+(.+)$`, 'i'
+  );
+  let m = line.match(rx);
+  let qty = null, unit = '', name = line;
+
+  if (m) {
+    qty  = m[1] ? parseFraction(m[1]) : 1;
+    unit = m[2].toLowerCase();
+    name = m[3];
+  } else {
+    // Try just a number at the start
+    const numRx = /^([\d\s\/½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]+)\s+(.+)$/;
+    const nm = line.match(numRx);
+    if (nm) {
+      const parsed = parseFraction(nm[1]);
+      if (parsed !== null) { qty = parsed; name = nm[2]; }
+    }
+  }
+
+  // Separate prep note after comma or parentheses
+  let prep = '';
+  const prepMatch = name.match(/^([^,(]+)[,\(](.*)$/);
+  if (prepMatch) {
+    name = prepMatch[1].trim();
+    prep = prepMatch[2].replace(/\)$/,'').trim();
+  }
+
+  // Lowercase + clean name
+  name = name.toLowerCase()
+    .replace(/\bfresh\b|\bfrozen\b|\bdried\b|\bground\b|\bchopped\b|\bdiced\b|\bsliced\b|\bminced\b|\bgrated\b|\bpeeled\b|\bcrushed\b|\bcooked\b|\braw\b|\blarge\b|\bmedium\b|\bsmall\b/gi, '')
+    .replace(/\s+/g,' ').trim();
+
+  // Remove trailing 's' for simple plurals to aid matching (garlic → garlic, onions → onion)
+  // But be careful not to mangle words like 'asparagus'
+  const safeSingular = name.replace(/(?<=[a-z]{3})s\b/g, '');
+
+  return { qty, unit, name: safeSingular || name, prep, raw: line };
+}
+
+// ── Category map: ingredient keyword → category ──
+const CAT_MAP = [
+  ['Produce', ['apple','apricot','artichoke','arugula','asparagus','avocado','banana','basil','bean sprout','beet','bell pepper','bok choy','broccoli','brussels','cabbage','carrot','cauliflower','celery','chard','cherry','chive','cilantro','corn','cucumber','dill','eggplant','endive','fennel','fig','garlic','ginger','grape','grapefruit','green bean','green onion','herb','jalapeño','kale','leek','lemon','lettuce','lime','mango','mint','mushroom','nectarine','onion','orange','oregano','parsley','parsnip','peach','pear','pea','pepper','pineapple','plum','pomegranate','potato','pumpkin','radish','raspberry','rosemary','sage','scallion','shallot','spinach','squash','strawberry','sweet potato','thyme','tomato','turnip','watermelon','yam','zucchini','cucumber','fennel','leek']],
+  ['Meat & Seafood', ['beef','brisket','chicken','clam','cod','crab','duck','fish','ground beef','ground turkey','ham','lamb','lobster','mussels','oyster','pork','prawn','ribeye','salmon','sausage','scallop','shrimp','sirloin','steak','tilapia','tuna','turkey','veal','venison','anchovy','bacon','pepperoni','chorizo','pancetta','prosciutto','salami','filet','brisket']],
+  ['Dairy', ['butter','buttermilk','cheese','cheddar','cream cheese','cream','egg','feta','gouda','greek yogurt','half and half','heavy cream','mascarpone','milk','mozzarella','parmesan','provolone','ricotta','sour cream','whipped cream','yogurt','brie','goat cheese','kefir','ghee','creme fraiche']],
+  ['Bakery', ['bagel','baguette','biscuit','bread','breadcrumb','brioche','bun','ciabatta','cracker','croissant','crouton','english muffin','flatbread','focaccia','lavash','naan','pita','pretzel','roll','sourdough','tortilla','wrap']],
+  ['Frozen', ['frozen','ice cream','sorbet','gelato','popsicle','edamame frozen','frozen pea','frozen corn','frozen spinach']],
+  ['Beverages', ['beer','broth','cider','coffee','juice','milk','soda','stock','tea','water','wine','sake','kombucha','lemonade','sparkling','mineral water','chicken broth','beef broth','vegetable broth','chicken stock','beef stock']],
+  ['Spices & Herbs', ['allspice','anise','bay leaf','black pepper','cardamom','cayenne','chili flake','chili powder','cinnamon','clove','coriander','cumin','curry','fennel seed','garam masala','garlic powder','ginger powder','herbs de provence','italian seasoning','mustard seed','nutmeg','onion powder','oregano','paprika','pepper','red pepper','saffron','salt','seasoning','sesame','star anise','sumac','turmeric','vanilla','white pepper','za\'atar','cajun','old bay','five spice','smoked paprika']],
+  ['Pantry', ['almond','baking powder','baking soda','bean','black bean','bread crumb','brown sugar','buckwheat','bulgur','canola oil','capers','cereal','chickpea','chocolate','cocoa','coconut milk','coconut oil','cornstarch','couscous','cracker','flour','honey','hot sauce','kidney bean','ketchup','lentil','maple syrup','marinara','mayonnaise','molasses','mustard','noodle','nut','oat','oil','olive oil','orzo','pasta','peanut butter','pinto bean','powdered sugar','quinoa','raisin','rice','sesame oil','soy sauce','sugar','sunflower oil','tahini','tomato paste','tomato sauce','vegetable oil','vinegar','walnut','white bean','worcestershire','yeast','pecan','cashew','pine nut','almond flour','cornmeal','polenta','barley','farro','panko','breadcrumbs','miso','fish sauce','oyster sauce','hoisin','sriracha','hot sauce','salsa','pickle','olive','canned tomato','diced tomato','crushed tomato','condensed milk','evaporated milk','coconut cream']],
+];
+
+function categorise(name) {
+  const n = name.toLowerCase();
+  for (const [cat, keywords] of CAT_MAP) {
+    if (keywords.some(k => n.includes(k))) return cat;
+  }
+  return 'Other';
+}
+
+// ── Smart purchase quantity recommender ──
+// Given a total base amount, unit base, and ingredient name, return a human label
+function recommendQty(totalBaseVal, base, unit, name, servings) {
+  const scale = servings / 2; // recipes typically written for 2; scale accordingly
+  const total = totalBaseVal * scale;
+  const n = name.toLowerCase();
+
+  if (base === 'ml') {
+    const ml = total;
+    if (ml <= 15)  return '1 small bottle';
+    if (ml <= 60)  return '1 small bottle';
+    if (ml <= 240) return '1 cup (8 fl oz)';
+    if (ml <= 480) return '1 pint (16 fl oz)';
+    if (ml <= 960) return '1 quart (32 fl oz)';
+    return `${+(ml/1000).toFixed(1)} L`;
+  }
+  if (base === 'g') {
+    const g = total;
+    // Meats / produce by weight
+    if (n.includes('flour') || n.includes('sugar') || n.includes('rice') || n.includes('oat') || n.includes('pasta') || n.includes('lentil') || n.includes('bean')) {
+      if (g <= 250)  return '1 small bag (½ lb)';
+      if (g <= 500)  return '1 bag (1 lb)';
+      if (g <= 1000) return '1 bag (2 lb)';
+      return `1 bag (${+(g/454).toFixed(1)} lb)`;
+    }
+    if (g <= 50)  return `${+(g/28).toFixed(1)} oz`;
+    if (g <= 250) return `${+(g/28).toFixed(0)} oz`;
+    if (g <= 900) return `${+(g/454).toFixed(2)} lb`;
+    return `${+(g/454).toFixed(1)} lb`;
+  }
+  if (base === 'count') {
+    const t = Math.ceil(total);
+    const u = unit || 'piece';
+    // Recommend real purchase amounts for common items
+    if (n.includes('egg'))   return t <= 4 ? '½ dozen' : t <= 8 ? '1 dozen' : '2 dozen';
+    if (n.includes('garlic')) return t <= 3 ? '1 head' : '2 heads';
+    if (n.includes('onion')) return t <= 2 ? '1 bag (3 lb)' : '1 bag (5 lb)';
+    if (n.includes('lemon') || n.includes('lime') || n.includes('orange')) return t <= 3 ? `${t}` : '1 bag';
+    if (n.includes('tomato')) return t <= 3 ? `${t} tomatoes` : '1 bag (2 lb)';
+    if (n.includes('potato') || n.includes('yam')) return t <= 3 ? `${t}` : '1 bag (5 lb)';
+    if (n.includes('avocado')) return `${t}`;
+    if (n.includes('banana')) return '1 bunch';
+    return t === 1 ? `1 ${u}` : `${t} ${u}s`.replace(/ss$/, 's');
+  }
+  // other/unknown — just show amount as-is
+  if (totalBaseVal === null || totalBaseVal === 0) return 'as needed';
+  return `${+(totalBaseVal * scale).toFixed(1)} ${unit}`.trim();
+}
+
+// ── Normalise ingredient name for deduplication ──
+// Strips descriptors so "fresh garlic cloves" and "garlic" both → "garlic"
+const NOISE_WORDS = new Set([
+  'fresh','dried','frozen','canned','chopped','diced','sliced','minced','grated',
+  'shredded','peeled','crushed','ground','cooked','raw','ripe','whole','halved',
+  'large','medium','small','extra','about','approximately','plus','optional',
+  'to taste','for serving','for garnish','finely','roughly','thinly','thick',
+  'divided','room temperature','softened','melted','beaten','sifted','heaping',
+  'packed','lightly','firmly','well','thoroughly',
+]);
+
+function canonicalise(name) {
+  return name.toLowerCase()
+    .split(' ')
+    .filter(w => !NOISE_WORDS.has(w) && w.length > 1)
+    .join(' ')
+    .trim();
+}
+
+// ── Main local generate function ──
+function generateLocal(recipeList, servings) {
+  // Map: canonical name → { name, qty entries, usedIn, category }
+  const merged = {};
+
+  recipeList.forEach(recipe => {
+    const lines = recipe.content.split(/\r?\n/);
+    lines.forEach(line => {
+      const parsed = parseIngredientLine(line);
+      if (!parsed || !parsed.name || parsed.name.length < 2) return;
+
+      const canon = canonicalise(parsed.name);
+      if (!canon || canon.length < 2) return;
+
+      if (!merged[canon]) {
+        merged[canon] = {
+          displayName: parsed.name,
+          entries: [],
+          usedIn: [],
+          category: categorise(parsed.name),
+        };
+      }
+      const entry = merged[canon];
+      if (!entry.usedIn.includes(recipe.title)) entry.usedIn.push(recipe.title);
+      if (parsed.qty !== null) {
+        entry.entries.push(normaliseUnit(parsed.qty, parsed.unit));
+      } else {
+        entry.entries.push({ value: null, unit: parsed.unit, base: 'other', baseVal: null });
+      }
+    });
+  });
+
+  // Consolidate and build output
+  return Object.entries(merged).map(([canon, data]) => {
+    // Group entries by base unit type
+    const byBase = {};
+    data.entries.forEach(e => {
+      if (!byBase[e.base]) byBase[e.base] = 0;
+      if (e.baseVal !== null) byBase[e.base] += e.baseVal;
+    });
+
+    // Pick the dominant base
+    let totalBase = 'count', totalVal = 0, totalUnit = '';
+    if (byBase['ml']    > 0) { totalBase = 'ml';    totalVal = byBase['ml'];    }
+    else if (byBase['g'] > 0) { totalBase = 'g';     totalVal = byBase['g'];     }
+    else if (byBase['count'] > 0) { totalBase = 'count'; totalVal = byBase['count']; totalUnit = data.entries.find(e=>e.base==='count')?.unit || ''; }
+    else if (byBase['other'] > 0) { totalBase = 'other'; totalVal = byBase['other']; totalUnit = data.entries.find(e=>e.base==='other')?.unit || ''; }
+
+    const qty = recommendQty(totalVal || null, totalBase, totalUnit, data.displayName, parseInt(servings));
+
+    return {
+      name: capitalise(data.displayName),
+      quantity: qty,
+      category: data.category,
+      note: '',
+      usedIn: data.usedIn,
+    };
+  }).sort((a,b) => a.name.localeCompare(b.name));
+}
+
+function capitalise(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ═══════════════════════════════════════════════════
+//  GENERATE (local engine, no API required)
+// ═══════════════════════════════════════════════════
+function generate() {
   const btn    = document.getElementById('btn-generate');
   const errBox = document.getElementById('error-box');
   const servings = document.getElementById('servings').value;
@@ -596,43 +819,33 @@ async function generate() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner">⟳</span> Building your list…';
 
-  const desc = recipes.map((r,i) =>
-    `Recipe ${i+1}: "${r.title}"\n${r.url!=='manual' ? 'URL: '+r.url : 'Ingredients:\n'+r.content}`
-  ).join('\n\n---\n\n');
+  // Use setTimeout so the spinner renders before we do the work
+  setTimeout(() => {
+    try {
+      // Filter to only manual-entry recipes (URL recipes need their text pasted in)
+      const usable = recipes.filter(r => r.url === 'manual' || r.content);
+      if (!usable.length) throw new Error('no_content');
 
-  const prompt = `You are a smart grocery shopping assistant. Given these recipes, create a consolidated grocery list for ${servings} people.\n\n${desc}\n\nInstructions:\n- Combine duplicate ingredients\n- Recommend practical purchase quantities/sizes (e.g. "1 bag (5 lb)" not "3 cups flour")\n- Note which recipes each item is used in\n- Categorize into: Produce, Dairy, Meat & Seafood, Bakery, Pantry, Spices & Herbs, Frozen, Beverages, Other\n- Add helpful notes where useful\n- If given URLs, infer likely ingredients from your knowledge of common recipes\n\nRespond ONLY with a valid JSON array, no markdown, no code fences:\n[{"name":"...","quantity":"...","category":"...","note":"...","usedIn":["Recipe title"]}]`;
+      const items = generateLocal(usable, servings);
+      if (!items.length) throw new Error('no_items');
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{ role:'user', content: prompt }]
-      })
-    });
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    const text  = (data.content||[]).map(b=>b.text||'').join('');
-    const items = JSON.parse(text.replace(/```json|```/g,'').trim());
-    groceryItems = items; checkedItems = {};
-    renderGroceryList(items);
-    persist();
-  } catch(e) {
-    console.error(e);
-    errBox.textContent = e.message?.includes('API')
-      ? `API error: ${e.message}`
-      : 'Couldn\'t generate the list. Check your API key in Settings, or add recipe details manually.';
-    errBox.style.display = '';
-  }
-  btn.disabled = recipes.length === 0;
-  btn.innerHTML = '✨ Generate Grocery List';
+      groceryItems = items;
+      checkedItems = {};
+      renderGroceryList(items);
+      persist();
+    } catch(e) {
+      if (e.message === 'no_content') {
+        errBox.innerHTML = 'To generate a list, use <strong>✍️ Type Ingredients</strong> mode and paste the ingredient list from your recipe.';
+      } else if (e.message === 'no_items') {
+        errBox.textContent = 'Couldn\'t find any ingredients. Make sure each ingredient is on its own line.';
+      } else {
+        errBox.textContent = 'Something went wrong parsing ingredients. Try formatting each ingredient on its own line.';
+      }
+      errBox.style.display = '';
+    }
+    btn.disabled = recipes.length === 0;
+    btn.innerHTML = '✨ Generate Grocery List';
+  }, 50);
 }
 
 // ═══════════════════════════════════════════════════
